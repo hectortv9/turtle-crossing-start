@@ -1,5 +1,6 @@
 import turtle
 import math
+import random
 
 X, Y = 0, 1
 WINDOW_BORDER = 11  # fixed value. Do not modify
@@ -38,7 +39,24 @@ class _ScreenBox:
         self.complementary_color = self.get_complementary_color(bgcolor)
         self.utility_turtle = _ScreenBox.initialize_turtle()
 
+    @staticmethod
+    def get_tkinter_color(color):
+        is_rgb = False
+        element_count = len(color)
+        if element_count == 3:
+            for number in color:
+                if not isinstance(number, int):
+                    break
+            else:
+                is_rgb = True
+        if is_rgb:
+            """translates an rgb tuple of int to a tkinter friendly color code"""
+            return "#%02x%02x%02x" % color
+        else:
+            return color
+
     def get_complementary_color(self, color):
+        color = _ScreenBox.get_tkinter_color(color)
         canvas = self.screen.getcanvas()
         root = canvas.winfo_toplevel()
         r, g, b = root.winfo_rgb(color)
@@ -51,6 +69,13 @@ class _ScreenBox:
         else:
             pass  # don't know about the other color modes ... research and implement
 
+        return r, g, b
+
+    def get_random_rgb(self):
+        colormode = self.screen.colormode()
+        r = random.randrange(int(colormode))
+        g = random.randrange(int(colormode))
+        b = random.randrange(int(colormode))
         return r, g, b
 
     @staticmethod
@@ -68,6 +93,7 @@ class _ScreenBox:
         utility_turtle = turtle.Turtle(visible=False)
         utility_turtle.pensize(1)
         utility_turtle.speed(0)
+        utility_turtle.setundobuffer(None)
         utility_turtle.pencolor(UTILITY_TURTLE_COLOR)
         utility_turtle.penup()
         return utility_turtle

@@ -1,5 +1,6 @@
 from turtle import Turtle
 from tkinter.font import Font
+from screen_box import ScreenBox
 
 SCORE_FONT = ("Terminal", 16, "bold")
 GAME_OVER_FONT = ("Terminal", 50, "bold")
@@ -22,6 +23,7 @@ class Scoreboard(Turtle):
         self.starting_position = 0, up_bound - (self.scoreboard_height - BOTTOM_MARGIN)
         self.pencolor(color)
         self.speed(0)
+        self.setundobuffer(None)
         self.penup()
         self.print_score()
 
@@ -42,20 +44,45 @@ class Scoreboard(Turtle):
 
         self.scoreboard_width = baseline_end - baseline_start
 
-    def print_game_over(self):
+    def print_end_of_game(self, message, do_celebrate):
         x = 0
         y = - int(self.get_font_height(GAME_OVER_FONT) / 2)
-        self.color(GAME_OVER_SHADOW_COLOR)
+
+        self.draw_message_shadow(x, y, message, GAME_OVER_SHADOW_COLOR, GAME_OVER_FONT)
+        self.write_simple_message(x, y, message, GAME_OVER_COLOR, GAME_OVER_FONT)
+
+        if do_celebrate:
+            banner_width = ScreenBox().right_bound - ScreenBox().left_bound
+            banner_height = abs(y * 3)
+            banner_bottom_left_xy = (ScreenBox().left_bound, - int(banner_height / 2))
+            self.setheading(0)
+            for _ in range(400):
+                self.goto(banner_bottom_left_xy[X], banner_bottom_left_xy[Y])
+                color = ScreenBox().get_random_rgb()
+                self.fillcolor(color)
+                self.begin_fill()
+                for _ in range(2):
+                    self.forward(banner_width)
+                    self.left(90)
+                    self.forward(banner_height)
+                    self.left(90)
+                self.end_fill()
+                self.write_simple_message(x, y, message, ScreenBox().get_complementary_color(color), GAME_OVER_FONT)
+                self.getscreen().update()
+
+    def draw_message_shadow(self, x, y, message, color, font):
+        self.color(color)
         rotation_degrees = 45
         for _ in range(int(360 / rotation_degrees)):
             self.setposition(x, y)
             self.right(rotation_degrees)
             self.forward(8)
-            self.write("GAME OVER", move=False, align="center", font=GAME_OVER_FONT)
+            self.write(message, move=False, align="center", font=font)
 
+    def write_simple_message(self, x, y, message, color, font):
         self.setposition(x, y)
-        self.color(GAME_OVER_COLOR)
-        self.write("GAME OVER", move=False, align="center", font=GAME_OVER_FONT)
+        self.color(color)
+        self.write(message, move=False, align="center", font=font)
 
     def increase_score(self):
         self.score += 1

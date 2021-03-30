@@ -1,5 +1,5 @@
 from turtle import Turtle
-import random
+from screen_box import ScreenBox
 
 X, Y = 0, 1
 PLAYER_SHAPE = "turtle"
@@ -26,6 +26,7 @@ class Player(Turtle):
         self.color(self.player_color)
         self.penup()
         self.speed(0)
+        self.setundobuffer(None)
         self.shapesize(stretch_wid=1, stretch_len=0.6)
         self.setposition(self.x_initial, self.y_initial)
         self.showturtle()
@@ -65,31 +66,26 @@ class Player(Turtle):
         del self.court
         del self.car_manager
 
-    def get_random_rgb(self):
-        colormode = self.getscreen().colormode()
-        r = random.randrange(int(colormode))
-        g = random.randrange(int(colormode))
-        b = random.randrange(int(colormode))
-        return r, g, b
-
     def level_cleared_animation(self):
         for _ in range(120):
             self.setheading(self.heading() + 6)
-            self.color(self.get_random_rgb())
+            self.color(ScreenBox().get_random_rgb())
             self.getscreen().update()
         self.color(self.player_color)
         self.getscreen().update()
 
     def kill_animation(self):
         dead_body = Player.get_dead_body(self)
-        for _ in range(self.car_manager.collision_distance * 2):
+        for _ in range(self.car_manager.calc.collision_distance * 2):
             dead_body.setposition(dead_body.xcor() - 1, dead_body.ycor())
-            dead_body.setheading(dead_body.heading() + 20)
+            heading = dead_body.heading() + 20
+            dead_body.setheading(heading)
             dead_body.getscreen().update()
         blood_stain = Player.get_blood_stain(dead_body)
         dead_body = Player.get_dead_body(dead_body)
+        dead_body.setheading(heading)
         dead_body.getscreen().update()
-        for _ in range(self.car_manager.collision_distance):
+        for _ in range(self.car_manager.calc.collision_distance):
             for layer in range(len(blood_stain)):
                 blood = blood_stain[layer]
                 if layer == 0:
@@ -117,6 +113,6 @@ class Player(Turtle):
         if self.is_player_move_enabled:
             if self.ycor() > self.court.lowest_gap[Y]:
                 self.setposition(self.xcor(), self.ycor() - self.move_distance)
-                if self.ycor() >= self.car_manager.bottom_lane_gap[Y]:
+                if self.ycor() >= self.car_manager.calc.bottom_lane_gap[Y]:
                     self.car_manager.check_collision(self)
                 self.getscreen().update()
