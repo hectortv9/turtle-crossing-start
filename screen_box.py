@@ -51,7 +51,7 @@ class _ScreenBox:
                 is_rgb = True
         if is_rgb:
             """translates an rgb tuple of int to a tkinter friendly color code"""
-            return "#%02x%02x%02x" % color
+            return "#{:02x}{:02x}{:02x}".format(color)
         else:
             return color
 
